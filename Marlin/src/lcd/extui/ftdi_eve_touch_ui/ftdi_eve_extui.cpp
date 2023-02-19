@@ -125,12 +125,7 @@ namespace ExtUI {
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
-    void onPowerLoss() {
-      // Called when power-loss state is detected
-    }
-    void onPowerLossResume() {
-      // Called on resume from power-loss
-    }
+    void onPowerLossResume() {} // Called on resume from power-loss
   #endif
 
   #if HAS_PID_HEATING

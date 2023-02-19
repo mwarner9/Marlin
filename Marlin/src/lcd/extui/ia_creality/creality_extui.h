@@ -49,21 +49,19 @@
 
 #define SizeofDatabuf 46
 
-//#define FONT_EEPROM      90
-//#define AutoLeve_EEPROM 100
-//#define FanOn       255
-#define FanOff        0
-
-#define ExchangePageBase  0x5A010000UL  // the first page ID. other page = first page ID + relevant num;
-#define StartSoundSet     0x060480A0UL  // 06,start-music; 04, 4 musics; 80, the volume value; 04, return value about music number.
-
-// Register addresses
+/*************Register and Variable addr*****************/
 #define RegAddr_W     0x80
 #define RegAddr_R     0x81
 #define VarAddr_W     0x82
 #define VarAddr_R     0x83
+#define ExchangePageBase (unsigned long)0x5A010000  // the first page ID. other page = first page ID + relevant num;
+#define StartSoundSet   ((unsigned long)0x060480A0) // 06,start-music; 04, 4 musics; 80, the volume value; 04, return value about music number.
+//#define FONT_EEPROM   90
+//#define AutoLeve_EEPROM 100
+//#define FanOn         255
+#define FanOff        0
 
-// Variable addresses
+/*variable addr*/
 #define ExchangepageAddr    0x0084
 #define SoundAddr           0x00A0
 #define StartIcon           0x1000
@@ -144,7 +142,7 @@
 #define DisplayZaxis        0x104C
 
 #define FilamentUnit1       0x1054
-#define Exchfilament        0x1056
+#define Exchfilement        0x1056
 #define FilamentUnit2       0x1058
 
 #define MacVersion          0x1060
@@ -195,13 +193,13 @@ namespace ExtUI {
   } rx_datagram_state_t;
 
   typedef struct DataBuf {
-    uint8_t len;
-    uint8_t head[2];
-    uint8_t command;
-    uint32_t addr;
-    uint32_t bytelen;
-    uint16_t data[32];
-    uint8_t reserv[4];
+    unsigned char len;
+    unsigned char head[2];
+    unsigned char command;
+    unsigned long addr;
+    unsigned long bytelen;
+    unsigned short data[32];
+    unsigned char reserv[4];
   } DB;
 
   struct creality_dwin_settings_t {
@@ -222,27 +220,27 @@ namespace ExtUI {
   class RTSSHOW {
     public:
       RTSSHOW();
-      int16_t RTS_RecData();
+      int RTS_RecData();
       void RTS_SDCardInit(void);
       void RTS_SDCardUpate(bool, bool);
-      int16_t RTS_CheckFilament(int16_t);
+      int RTS_CheckFilament(int);
       void RTS_SndData(void);
-      void RTS_SndData(const String &, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(const char[], uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(char, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(uint8_t*, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(int16_t, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(float, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(uint16_t, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(int32_t, uint32_t, uint8_t=VarAddr_W);
-      void RTS_SndData(uint32_t, uint32_t, uint8_t=VarAddr_W);
+      void RTS_SndData(const String &, unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(const char[], unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(char, unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(unsigned char*, unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(int, unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(float, unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(unsigned int,unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(long,unsigned long, unsigned char = VarAddr_W);
+      void RTS_SndData(unsigned long,unsigned long, unsigned char = VarAddr_W);
       void RTS_SDcard_Stop();
       void RTS_HandleData();
       void RTS_Init();
 
       DB recdat;
       DB snddat;
-      uint8_t databuf[SizeofDatabuf];
+      unsigned char databuf[SizeofDatabuf];
 
       static rx_datagram_state_t rx_datagram_state;
       static uint8_t rx_datagram_len;
@@ -252,13 +250,13 @@ namespace ExtUI {
   static RTSSHOW rtscheck;
 
   #define Addvalue           3
-  #define PrintChoice_Value (0 + Addvalue)
-  #define Zoffset_Value     (3 + Addvalue)
-  #define Setting_Value     (8 + Addvalue)
-  #define XYZEaxis_Value    (12 + Addvalue)
-  #define Filament_Value    (15 + Addvalue)
-  #define Language_Value    (18 + Addvalue)
-  #define Filename_Value    (22 + Addvalue)
+  #define PrintChoice_Value (0+Addvalue)
+  #define Zoffset_Value     (3+Addvalue)
+  #define Setting_Value     (8+Addvalue)
+  #define XYZEaxis_Value    (12+Addvalue)
+  #define Filament_Value    (15+Addvalue)
+  #define Language_Value    (18+Addvalue)
+  #define Filename_Value    (22+Addvalue)
 
   enum PROC_COM {
     Printfile = 0,
@@ -281,7 +279,7 @@ namespace ExtUI {
     Filename = Filename_Value
   };
 
-  const uint32_t Addrbuf[] = {
+  const unsigned long Addrbuf[] = {
     0x1002, 0x1004, 0x1006, 0x1008, 0x100A, 0x100C,  0x1026, 0x1030, 0x1032, 0x1034, 0x103A,
     0x103E, 0x1040, 0x1044, 0x1046, 0x1048, 0x104A, 0x104C, 0x1054, 0x1056, 0x1058,
     0x105C, 0x105E, 0x105F, 0x1088, 0
