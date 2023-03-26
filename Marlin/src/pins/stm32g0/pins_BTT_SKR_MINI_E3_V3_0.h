@@ -134,7 +134,7 @@
 //
 #define HEATER_0_PIN                        PC8   // "HE"
 #define HEATER_BED_PIN                      PC9   // "HB"
-#define FAN_PIN                             PC6   // "Part Cooling Fan"
+#define FAN0_PIN                             PC6   // "Part Cooling Fan"
 #define FAN1_PIN                            PC7   // "Control Board Cooling Fan"
 #define FAN2_PIN                            PB15  // "Hotend Cooling Fan"
 
