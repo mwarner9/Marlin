@@ -668,14 +668,14 @@
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify up to one value per hotend here, according to your setup.
     // If there are fewer values, the last one applies to the remaining hotends.
-    #define DEFAULT_Kp_LIST {  26.91,  26.91 }
-    #define DEFAULT_Ki_LIST {   2.83,   2.83 }
-    #define DEFAULT_Kd_LIST {  64.04,  64.04 }
+    #define DEFAULT_Kp_LIST {  23.66,  23.66 }
+    #define DEFAULT_Ki_LIST {   1.99,   1.99 }
+    #define DEFAULT_Kd_LIST {  70.45,  70.45 }
   #else
     // Ender 3 v2
-    #define DEFAULT_Kp  26.91
-    #define DEFAULT_Ki   2.83
-    #define DEFAULT_Kd  64.04
+    #define DEFAULT_Kp  23.66
+    #define DEFAULT_Ki   1.99
+    #define DEFAULT_Kd  70.45
   #endif
 #endif
 
@@ -758,9 +758,9 @@
   //#define PID_BED_DEBUG // Print Bed PID debug data to the serial port.
 
   // Ender 3 V2
-  #define DEFAULT_bedKp 39.57
-  #define DEFAULT_bedKi  1.61
-  #define DEFAULT_bedKd 649.96
+  #define DEFAULT_bedKp 38.26
+  #define DEFAULT_bedKi  1.35
+  #define DEFAULT_bedKd 724.48
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
@@ -1534,7 +1534,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET {-51, -10.9, -3.55}
+#define NOZZLE_TO_PROBE_OFFSET {-51, -10.9, -3.00}
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
 #define PROBING_TOOL 0
@@ -1544,7 +1544,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 20
+#define PROBING_MARGIN 50
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (133*60)
@@ -2057,7 +2057,7 @@
 #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 5
+  #define GRID_MAX_POINTS_X 6
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
