@@ -1682,6 +1682,28 @@ bool SdBaseFile::remove(SdBaseFile * const dirFile, const char * const path) {
   return file.open(dirFile, path, O_WRITE) ? file.remove() : false;
 }
 
+bool SdBaseFile::hide(const bool hidden) {
+  if (ENABLED(SDCARD_READONLY)) return false;
+  // must be an open file or subdirectory
+  if (!(isFile() || isSubDir())) return false;
+  // sync() and cache directory entry
+  sync();
+  dir_t *d = cacheDirEntry(SdVolume::CACHE_FOR_WRITE);
+  if (!d) return false;
+  uint8_t a = d->attributes;
+  if (hidden)
+    a |= DIR_ATT_HIDDEN;
+  else
+    a &= ~DIR_ATT_HIDDEN;
+
+  if (a != d->attributes) {
+    d->attributes = a;
+    return vol_->cacheFlush();
+  }
+
+  return true;
+}
+
 /**
  * Rename a file or subdirectory.
  *
