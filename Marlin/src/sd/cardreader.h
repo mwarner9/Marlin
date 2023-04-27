@@ -107,9 +107,6 @@ public:
   CardReader();
 
   static void changeMedia(DiskIODriver *_driver) { driver = _driver; }
-
-  static MediaFile getroot() { return root; }
-
   static void mount();
   static void release();
   static bool isMounted() { return flag.mounted; }
