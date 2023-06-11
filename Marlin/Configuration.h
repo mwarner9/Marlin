@@ -705,11 +705,11 @@
   #define MPC_INCLUDE_FAN                             // Model the fan speed?
 
   // Measured physical constants from M306
-  #define MPC_BLOCK_HEAT_CAPACITY { 20.60f }           // (J/K) Heat block heat capacities.
-  #define MPC_SENSOR_RESPONSIVENESS { 0.2404f }         // (K/s per ∆K) Rate of change of sensor temperature from heat block.
-  #define MPC_AMBIENT_XFER_COEFF { 0.2350f }           // (W/K) Heat transfer coefficients from heat block to room air with fan off.
+  #define MPC_BLOCK_HEAT_CAPACITY { 18.84f }           // (J/K) Heat block heat capacities.
+  #define MPC_SENSOR_RESPONSIVENESS { 0.1673f }         // (K/s per ∆K) Rate of change of sensor temperature from heat block.
+  #define MPC_AMBIENT_XFER_COEFF { 0.1882f }           // (W/K) Heat transfer coefficients from heat block to room air with fan off.
   #if ENABLED(MPC_INCLUDE_FAN)
-    #define MPC_AMBIENT_XFER_COEFF_FAN255 { 0.2709f }  // (W/K) Heat transfer coefficients from heat block to room air with fan on full.
+    #define MPC_AMBIENT_XFER_COEFF_FAN255 { 0.270f }  // (W/K) Heat transfer coefficients from heat block to room air with fan on full.
   #endif
 
   // For one fan and multiple hotends MPC needs to know how to apply the fan cooling effect.
@@ -1551,7 +1551,7 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET {-51, -10.9, -3.00}
+#define NOZZLE_TO_PROBE_OFFSET {-51, -10.9, -3.30}
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
 #define PROBING_TOOL 0
@@ -1561,7 +1561,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 50
+#define PROBING_MARGIN 20
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_FEEDRATE (133*60)
@@ -2074,7 +2074,7 @@
 #if ANY(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 6
+  #define GRID_MAX_POINTS_X 5
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
@@ -2090,7 +2090,7 @@
     // Subdivision of the grid by Catmull-Rom method.
     // Synthesizes intermediate points to produce a more detailed mesh.
     //
-    //#define ABL_BILINEAR_SUBDIVISION
+    #define ABL_BILINEAR_SUBDIVISION
     #if ENABLED(ABL_BILINEAR_SUBDIVISION)
       // Number of subdivisions between probe points
       #define BILINEAR_SUBDIVISIONS 3
@@ -2160,7 +2160,7 @@
  * Add a bed leveling sub-menu for ABL or MBL.
  * Include a guided procedure if manual probing is enabled.
  */
-//#define LCD_BED_LEVELING
+#define LCD_BED_LEVELING
 
 #if ENABLED(LCD_BED_LEVELING)
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
@@ -2169,14 +2169,14 @@
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
-//#define LCD_BED_TRAMMING
+#define LCD_BED_TRAMMING
 
 #if ENABLED(LCD_BED_TRAMMING)
-  #define BED_TRAMMING_INSET_LFRB { 50, 50, 50, 50 } // (mm) Left, Front, Right, Back insets
+  #define BED_TRAMMING_INSET_LFRB { 20, 0, 20, 0 } // (mm) Left, Front, Right, Back insets
   #define BED_TRAMMING_HEIGHT      0.0        // (mm) Z height of nozzle at leveling points
   #define BED_TRAMMING_Z_HOP       4.0        // (mm) Z height of nozzle between leveling points
-  //#define BED_TRAMMING_INCLUDE_CENTER       // Move to the center after the last corner
-  //#define BED_TRAMMING_USE_PROBE
+  #define BED_TRAMMING_INCLUDE_CENTER       // Move to the center after the last corner
+  #define BED_TRAMMING_USE_PROBE
   #if ENABLED(BED_TRAMMING_USE_PROBE)
     #define BED_TRAMMING_PROBE_TOLERANCE 0.1  // (mm)
     #define BED_TRAMMING_VERIFY_RAISED        // After adjustment triggers the probe, re-probe to verify
