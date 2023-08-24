@@ -129,9 +129,6 @@
   #include "lockscreen.h"
 #endif
 
-#define DEBUG_OUT ENABLED(DEBUG_DWIN)
-#include "../../../core/debug_out.h"
-
 #ifndef MACHINE_SIZE
   #define MACHINE_SIZE STRINGIFY(X_BED_SIZE) "x" STRINGIFY(Y_BED_SIZE) "x" STRINGIFY(Z_MAX_POS)
 #endif
@@ -217,13 +214,13 @@ Menu *prepareMenu = nullptr;
   Menu *trammingMenu = nullptr;
 #endif
 Menu *moveMenu = nullptr;
-Menu *ControlMenu = nullptr;
-Menu *AdvancedSettings = nullptr;
+Menu *controlMenu = nullptr;
+Menu *advancedSettingsMenu = nullptr;
 #if HAS_HOME_OFFSET
   Menu *homeOffsetMenu = nullptr;
 #endif
 #if HAS_BED_PROBE
-  Menu *ProbeSetMenu = nullptr;
+  Menu *probeSettingsMenu = nullptr;
 #endif
 Menu *filSetMenu = nullptr;
 Menu *selectColorMenu = nullptr;
@@ -232,7 +229,7 @@ Menu *tuneMenu = nullptr;
 Menu *motionMenu = nullptr;
 Menu *filamentMenu = nullptr;
 #if ENABLED(MESH_BED_LEVELING)
-  Menu *manualMesh = nullptr;
+  Menu *manualMeshMenu = nullptr;
 #endif
 #if HAS_PREHEAT
   Menu *preheatMenu = nullptr;
@@ -254,7 +251,7 @@ Menu *stepsMenu = nullptr;
 #if ENABLED(PIDTEMPBED) && ANY(PID_EDIT_MENU, PID_AUTOTUNE_MENU)
   Menu *bedPIDMenu = nullptr;
 #endif
-#if ENABLED(CASELIGHT_USES_BRIGHTNESS)
+#if CASELIGHT_USES_BRIGHTNESS
   Menu *caseLightMenu = nullptr;
 #endif
 #if ENABLED(LED_CONTROL_MENU)
@@ -853,7 +850,7 @@ bool DWIN_lcd_sd_status = false;
 #if ENABLED(MEDIASORT_MENU_ITEM)
   void setMediaSort() {
     toggleCheckboxLine(hmiData.mediaSort);
-    card.setSortOn(hmiData.mediaSort);
+    card.setSortOn(hmiData.mediaSort ? TERN(SDSORT_REVERSE, AS_REV, AS_FWD) : AS_OFF);
   }
 #endif
 
@@ -1757,7 +1754,7 @@ void dwinSetDataDefaults() {
   #endif
   #if ENABLED(MEDIASORT_MENU_ITEM)
     hmiData.mediaSort = true;
-    card.setSortOn(true);
+    card.setSortOn(TERN(SDSORT_REVERSE, AS_REV, AS_FWD));
   #endif
   hmiData.mediaAutoMount = ENABLED(HAS_SD_EXTENDER);
   #if ALL(INDIVIDUAL_AXIS_HOMING_SUBMENU, MESH_BED_LEVELING)
@@ -1828,7 +1825,7 @@ void MarlinUI::refresh() { /* Nothing to see here */ }
   void MarlinUI::_set_brightness() { dwinLCDBrightness(backlight ? brightness : 0); }
 #endif
 
-void MarlinUI::kill_screen(FSTR_P const lcd_error, FSTR_P const lcd_component) {
+void MarlinUI::kill_screen(FSTR_P const lcd_error, FSTR_P const) {
   dwinDrawPopup(ICON_BLTouch, GET_TEXT_F(MSG_PRINTER_KILLED), lcd_error);
   DWINUI::drawCenteredString(hmiData.colorPopupTxt, 270, GET_TEXT_F(MSG_TURN_OFF));
   dwinUpdateLCD();
@@ -2155,9 +2152,10 @@ void setMoveZ() { hmiValue.axis = Z_AXIS; setPFloatOnClick(Z_MIN_POS, Z_MAX_POS,
     toggleCheckboxLine(caselight.on);
     caselight.update_enabled();
   }
-  #if ENABLED(CASELIGHT_USES_BRIGHTNESS)
+  #if CASELIGHT_USES_BRIGHTNESS
+    bool enableLiveCaseLightBrightness = true;
     void liveCaseLightBrightness() { caselight.brightness = menuData.value; caselight.update_brightness(); }
-    void setCaseLightBrightness() { setIntOnClick(0, 255, caselight.brightness, nullptr, liveCaseLightBrightness); }
+    void setCaseLightBrightness() { setIntOnClick(0, 255, caselight.brightness, liveCaseLightBrightness, enableLiveCaseLightBrightness ? liveCaseLightBrightness : nullptr); }
   #endif
 #endif
 
@@ -2169,10 +2167,12 @@ void setMoveZ() { hmiValue.axis = Z_AXIS; setPFloatOnClick(Z_MIN_POS, Z_MAX_POS,
     }
   #endif
   #if HAS_COLOR_LEDS
+    bool enableLiveLedColor = true;
     void applyLEDColor() {
       hmiData.ledColor = LEDColor( {leds.color.r, leds.color.g, leds.color.b OPTARG(HAS_WHITE_LED, hmiData.ledColor.w) } );
+      if (!enableLiveLedColor) leds.update();
     }
-    void liveLEDColor(uint8_t *color) { *color = menuData.value; leds.update(); }
+    void liveLEDColor(uint8_t *color) { *color = menuData.value; if (enableLiveLedColor) leds.update(); }
     void liveLEDColorR() { liveLEDColor(&leds.color.r); }
     void liveLEDColorG() { liveLEDColor(&leds.color.g); }
     void liveLEDColorB() { liveLEDColor(&leds.color.b); }
@@ -2203,10 +2203,14 @@ void setMoveZ() { hmiValue.axis = Z_AXIS; setPFloatOnClick(Z_MIN_POS, Z_MAX_POS,
   void setProbeOffsetX() { setPFloatOnClick(-60, 60, UNITFDIGITS); }
   void setProbeOffsetY() { setPFloatOnClick(-60, 60, UNITFDIGITS); }
   void setProbeOffsetZ() { setPFloatOnClick(-10, 10, 2); }
-  void probeTest() {
-    LCD_MESSAGE(MSG_M48_TEST);
-    queue.inject(F("G28O\nM48 P10"));
-  }
+
+  #if ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST)
+    void probeTest() {
+      LCD_MESSAGE(MSG_M48_TEST);
+      queue.inject(F("G28O\nM48 P10"));
+    }
+  #endif
+
   void probeStow() { probe.stow(); }
   void probeDeploy() { probe.deploy(); }
 
@@ -3038,35 +3042,37 @@ void drawPrepareMenu() {
 
 void drawControlMenu() {
   checkkey = ID_Menu;
-  if (SET_MENU_R(ControlMenu, selrect({103, 1, 28, 14}), MSG_CONTROL, 10)) {
+  if (SET_MENU_R(controlMenu, selrect({103, 1, 28, 14}), MSG_CONTROL, 11)) {
     BACK_ITEM(gotoMainMenu);
     MENU_ITEM(ICON_Temperature, MSG_TEMPERATURE, onDrawTempSubMenu, drawTemperatureMenu);
     MENU_ITEM(ICON_Motion, MSG_MOTION, onDrawMotionSubMenu, drawMotionMenu);
-    #if ENABLED(EEPROM_SETTINGS)
-      MENU_ITEM(ICON_WriteEEPROM, MSG_STORE_EEPROM, onDrawWriteEeprom, writeEEPROM);
-      MENU_ITEM(ICON_ReadEEPROM, MSG_LOAD_EEPROM, onDrawReadEeprom, readEEPROM);
-      MENU_ITEM(ICON_ResumeEEPROM, MSG_RESTORE_DEFAULTS, onDrawResetEeprom, resetEEPROM);
-    #endif
-    MENU_ITEM(ICON_Reboot, MSG_RESET_PRINTER, onDrawMenuItem, rebootPrinter);
     #if ENABLED(CASE_LIGHT_MENU)
-      #if ENABLED(CASELIGHT_USES_BRIGHTNESS)
+      #if CASELIGHT_USES_BRIGHTNESS
+        enableLiveCaseLightBrightness = true;  // Allow live update of brightness in control menu
         MENU_ITEM(ICON_CaseLight, MSG_CASE_LIGHT, onDrawSubMenu, drawCaseLightMenu);
       #else
         MENU_ITEM(ICON_CaseLight, MSG_CASE_LIGHT, onDrawChkbMenu, setCaseLight, &caselight.on);
       #endif
     #endif
     #if ENABLED(LED_CONTROL_MENU)
+      enableLiveLedColor = true;  // Allow live update of color in control menu
       MENU_ITEM(ICON_LedControl, MSG_LED_CONTROL, onDrawSubMenu, drawLedControlMenu);
     #endif
+    #if ENABLED(EEPROM_SETTINGS)
+      MENU_ITEM(ICON_WriteEEPROM, MSG_STORE_EEPROM, onDrawWriteEeprom, writeEEPROM);
+      MENU_ITEM(ICON_ReadEEPROM, MSG_LOAD_EEPROM, onDrawReadEeprom, readEEPROM);
+      MENU_ITEM(ICON_ResumeEEPROM, MSG_RESTORE_DEFAULTS, onDrawResetEeprom, resetEEPROM);
+    #endif
+    MENU_ITEM(ICON_Reboot, MSG_RESET_PRINTER, onDrawMenuItem, rebootPrinter);
     MENU_ITEM(ICON_Info, MSG_INFO_SCREEN, onDrawInfoSubMenu, gotoInfoMenu);
   }
   ui.reset_status(true);
-  updateMenu(ControlMenu);
+  updateMenu(controlMenu);
 }
 
 void drawAdvancedSettingsMenu() {
   checkkey = ID_Menu;
-  if (SET_MENU(AdvancedSettings, MSG_ADVANCED_SETTINGS, 22)) {
+  if (SET_MENU(advancedSettingsMenu, MSG_ADVANCED_SETTINGS, 23)) {
     BACK_ITEM(gotoMainMenu);
     #if ENABLED(EEPROM_SETTINGS)
       MENU_ITEM(ICON_WriteEEPROM, MSG_STORE_EEPROM, onDrawMenuItem, writeEEPROM);
@@ -3076,6 +3082,9 @@ void drawAdvancedSettingsMenu() {
     #endif
     #if HAS_BED_PROBE
       MENU_ITEM(ICON_ProbeSet, MSG_ZPROBE_SETTINGS, onDrawSubMenu, drawProbeSetMenu);
+    #endif
+    #if HAS_HOME_OFFSET
+      MENU_ITEM(ICON_ProbeSet, MSG_SET_HOME_OFFSETS, onDrawSubMenu, drawHomeOffsetMenu);
     #endif
     MENU_ITEM(ICON_FilSet, MSG_FILAMENT_SET, onDrawSubMenu, drawFilSetMenu);
     #if ENABLED(PIDTEMP) && ANY(PID_AUTOTUNE_MENU, PID_EDIT_MENU)
@@ -3125,7 +3134,7 @@ void drawAdvancedSettingsMenu() {
     #endif
   }
   ui.reset_status(true);
-  updateMenu(AdvancedSettings);
+  updateMenu(advancedSettingsMenu);
 }
 
 void drawMoveMenu() {
@@ -3156,7 +3165,7 @@ void drawMoveMenu() {
   void drawHomeOffsetMenu() {
     checkkey = ID_Menu;
     if (SET_MENU(homeOffsetMenu, MSG_SET_HOME_OFFSETS, 4)) {
-      BACK_ITEM(drawPhySetMenu);
+      BACK_ITEM(drawAdvancedSettingsMenu);
       #if HAS_X_AXIS
         EDIT_ITEM(ICON_HomeOffsetX, MSG_HOME_OFFSET_X, onDrawPFloatMenu, setHomeOffsetX, &home_offset.x);
       #endif
@@ -3176,7 +3185,7 @@ void drawMoveMenu() {
 
   void drawProbeSetMenu() {
     checkkey = ID_Menu;
-    if (SET_MENU(ProbeSetMenu, MSG_ZPROBE_SETTINGS, 9)) {
+    if (SET_MENU(probeSettingsMenu, MSG_ZPROBE_SETTINGS, 9)) {
       BACK_ITEM(drawAdvancedSettingsMenu);
       #if HAS_X_AXIS
         EDIT_ITEM(ICON_ProbeOffsetX, MSG_ZPROBE_XOFFSET, onDrawPFloatMenu, setProbeOffsetX, &probe.offset.x);
@@ -3195,9 +3204,11 @@ void drawMoveMenu() {
           EDIT_ITEM(ICON_HSMode, MSG_ENABLE_HS_MODE, onDrawChkbMenu, setHSMode, &bltouch.high_speed_mode);
         #endif
       #endif
-      MENU_ITEM(ICON_ProbeTest, MSG_M48_TEST, onDrawMenuItem, probeTest);
+      #if ENABLED(Z_MIN_PROBE_REPEATABILITY_TEST)
+        MENU_ITEM(ICON_ProbeTest, MSG_M48_TEST, onDrawMenuItem, probeTest);
+      #endif
     }
-    updateMenu(ProbeSetMenu);
+    updateMenu(probeSettingsMenu);
   }
 
 #endif // HAS_BED_PROBE
@@ -3245,7 +3256,7 @@ void drawFilSetMenu() {
   void drawLedControlMenu() {
     checkkey = ID_Menu;
     if (SET_MENU(ledControlMenu, MSG_LED_CONTROL, 10)) {
-      BACK_ITEM(drawControlMenu);
+      BACK_ITEM((currentMenu == tuneMenu) ? drawTuneMenu : drawControlMenu);
       #if !ALL(CASE_LIGHT_MENU, CASE_LIGHT_USE_NEOPIXEL)
         EDIT_ITEM(ICON_LedControl, MSG_LEDS, onDrawChkbMenu, setLedStatus, &leds.lights_on);
       #endif
@@ -3276,7 +3287,7 @@ void drawFilSetMenu() {
 
 void drawTuneMenu() {
   checkkey = ID_Menu;
-  if (SET_MENU_R(tuneMenu, selrect({73, 2, 28, 12}), MSG_TUNE, 17)) {
+  if (SET_MENU_R(tuneMenu, selrect({73, 2, 28, 12}), MSG_TUNE, 18)) {
     BACK_ITEM(gotoPrintProcess);
     EDIT_ITEM(ICON_Speed, MSG_SPEED, onDrawSpeedItem, setSpeed, &feedrate_percentage);
     #if HAS_HOTEND
@@ -3321,6 +3332,16 @@ void drawTuneMenu() {
     #endif
     #if ENABLED(CASE_LIGHT_MENU)
       EDIT_ITEM(ICON_CaseLight, MSG_CASE_LIGHT, onDrawChkbMenu, setCaseLight, &caselight.on);
+      #if CASELIGHT_USES_BRIGHTNESS
+        // Avoid heavy interference with print job disabling live update of brightness in tune menu
+        enableLiveCaseLightBrightness = false;
+        EDIT_ITEM(ICON_Brightness, MSG_CASE_LIGHT_BRIGHTNESS, onDrawPInt8Menu, setCaseLightBrightness, &caselight.brightness);
+      #endif
+      #if ENABLED(LED_CONTROL_MENU)
+        // Avoid heavy interference with print job disabling live update of color in tune menu
+        enableLiveLedColor = false;
+        MENU_ITEM(ICON_LedControl, MSG_LED_CONTROL, onDrawSubMenu, drawLedControlMenu);
+      #endif
     #elif ENABLED(LED_CONTROL_MENU) && DISABLED(CASE_LIGHT_USE_NEOPIXEL)
       EDIT_ITEM(ICON_LedControl, MSG_LEDS, onDrawChkbMenu, setLedStatus, &leds.lights_on);
     #endif
@@ -3431,19 +3452,21 @@ void drawMotionMenu() {
   updateMenu(motionMenu);
 }
 
-#if HAS_PREHEAT
-  void drawPreheatHotendMenu() {
-    checkkey = ID_Menu;
-    if (SET_MENU(preheatHotendMenu, MSG_PREHEAT_HOTEND, 1 + PREHEAT_COUNT)) {
-      BACK_ITEM(drawFilamentManMenu);
-      #define _ITEM_PREHEAT_HE(N) MENU_ITEM(ICON_Preheat##N, MSG_PREHEAT_##N, onDrawMenuItem, DoPreheatHotend##N);
-      REPEAT_1(PREHEAT_COUNT, _ITEM_PREHEAT_HE)
-    }
-    updateMenu(preheatHotendMenu);
-  }
-#endif
-
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
+
+  #if HAS_PREHEAT
+
+    void drawPreheatHotendMenu() {
+      checkkey = ID_Menu;
+      if (SET_MENU(preheatHotendMenu, MSG_PREHEAT_HOTEND, 1 + PREHEAT_COUNT)) {
+        BACK_ITEM(drawFilamentManMenu);
+        #define _ITEM_PREHEAT_HE(N) MENU_ITEM(ICON_Preheat##N, MSG_PREHEAT_##N, onDrawMenuItem, DoPreheatHotend##N);
+        REPEAT_1(PREHEAT_COUNT, _ITEM_PREHEAT_HE)
+      }
+      updateMenu(preheatHotendMenu);
+    }
+
+  #endif
 
   void drawFilamentManMenu() {
     checkkey = ID_Menu;
@@ -3470,7 +3493,7 @@ void drawMotionMenu() {
 
   void drawManualMeshMenu() {
     checkkey = ID_Menu;
-    if (SET_MENU(manualMesh, MSG_UBL_MANUAL_MESH, 6)) {
+    if (SET_MENU(manualMeshMenu, MSG_UBL_MANUAL_MESH, 6)) {
       BACK_ITEM(drawPrepareMenu);
       MENU_ITEM(ICON_ManualMesh, MSG_LEVEL_BED, onDrawMenuItem, manualMeshStart);
       mMeshMoveZItem = EDIT_ITEM(ICON_Zoffset, MSG_MOVE_Z, onDrawMMeshMoveZ, setMMeshMoveZ, &current_position.z);
@@ -3478,7 +3501,7 @@ void drawMotionMenu() {
       MENU_ITEM(ICON_MeshViewer, MSG_MESH_VIEW, onDrawSubMenu, dwinMeshViewer);
       MENU_ITEM(ICON_MeshSave, MSG_UBL_SAVE_MESH, onDrawMenuItem, manualMeshSave);
     }
-    updateMenu(manualMesh);
+    updateMenu(manualMeshMenu);
   }
 
 #endif // MESH_BED_LEVELING
@@ -3794,9 +3817,9 @@ void drawStepsMenu() {
         EDIT_ITEM(ICON_PIDCycles, MSG_PID_CYCLE, onDrawPIntMenu, setPidCycles, &hmiData.pidCycles);
       #endif
       #if ENABLED(PID_EDIT_MENU)
-        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KP, onDrawPFloat2Menu, SetKp, &thermalManager.temp_hotend[0].pid.Kp);
-        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KI, onDrawPIDi, SetKi, &thermalManager.temp_hotend[0].pid.Ki);
-        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KD, onDrawPIDd, SetKd, &thermalManager.temp_hotend[0].pid.Kd);
+        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KP, onDrawPFloat2Menu, setKp, &thermalManager.temp_hotend[0].pid.Kp);
+        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KI, onDrawPIDi, setKi, &thermalManager.temp_hotend[0].pid.Ki);
+        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KD, onDrawPIDd, setKd, &thermalManager.temp_hotend[0].pid.Kd);
       #endif
       #if ENABLED(EEPROM_SETTINGS)
         MENU_ITEM(ICON_WriteEEPROM, MSG_STORE_EEPROM, onDrawMenuItem, writeEEPROM);
@@ -3824,9 +3847,9 @@ void drawStepsMenu() {
         EDIT_ITEM(ICON_PIDCycles, MSG_PID_CYCLE, onDrawPIntMenu, setPidCycles, &hmiData.pidCycles);
       #endif
       #if ENABLED(PID_EDIT_MENU)
-        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KP, onDrawPFloat2Menu, SetKp, &thermalManager.temp_bed.pid.Kp);
-        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KI, onDrawPIDi, SetKi, &thermalManager.temp_bed.pid.Ki);
-        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KD, onDrawPIDd, SetKd, &thermalManager.temp_bed.pid.Kd);
+        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KP, onDrawPFloat2Menu, setKp, &thermalManager.temp_bed.pid.Kp);
+        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KI, onDrawPIDi, setKi, &thermalManager.temp_bed.pid.Ki);
+        EDIT_ITEM_F(ICON_PIDValue, "Set" STR_KD, onDrawPIDd, setKd, &thermalManager.temp_bed.pid.Kd);
       #endif
       #if ENABLED(EEPROM_SETTINGS)
         MENU_ITEM(ICON_WriteEEPROM, MSG_STORE_EEPROM, onDrawMenuItem, writeEEPROM);
