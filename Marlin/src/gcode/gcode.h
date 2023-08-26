@@ -480,7 +480,7 @@ public:
 
   static void dwell(millis_t time);
 
-private:
+public:
 
   friend class MarlinSettings;
 
