@@ -1407,7 +1407,7 @@
 /**
  * The BLTouch probe uses a Hall effect sensor and emulates a servo.
  */
-#define BLTOUCH
+//#define BLTOUCH
 
 /**
  * MagLev V4 probe by MDD
@@ -2038,7 +2038,7 @@
  * For information about this sensor https://github.com/markniu/Bed_Distance_sensor
  * Uses I2C port, so it requires I2C library markyue/Panda_SoftMasterI2C.
  */
-//#define BD_SENSOR
+#define BD_SENSOR
 
 /**
  * Enable detailed logging of G28, G29, M48, etc.
@@ -2046,7 +2046,7 @@
  * NOTE: Requires a lot of PROGMEM!
  */
 
- //#define BD_SENSOR_PROBE_NO_STOP
+ #define BD_SENSOR_PROBE_NO_STOP
 
 #define DEBUG_LEVELING_FEATURE
 
