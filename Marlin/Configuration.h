@@ -2045,8 +2045,7 @@
  * Turn on with the command 'M111 S32'.
  * NOTE: Requires a lot of PROGMEM!
  */
-
- #define BD_SENSOR_PROBE_NO_STOP
+#define BD_SENSOR_PROBE_NO_STOP
 
 #define DEBUG_LEVELING_FEATURE
 
