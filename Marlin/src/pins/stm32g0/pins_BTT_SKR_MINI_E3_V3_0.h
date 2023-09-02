@@ -37,16 +37,20 @@
 // Onboard I2C EEPROM
 #if ANY(NO_EEPROM_SELECTED, I2C_EEPROM)
   #undef NO_EEPROM_SELECTED
-  #define I2C_EEPROM
-  #define SOFT_I2C_EEPROM                         // Force the use of Software I2C
+  //#define I2C_EEPROM
+  //#define SOFT_I2C_EEPROM                         // Force the use of Software I2C
   #define I2C_SCL_PIN                       PA1
   #define I2C_SDA_PIN                       PC14
-  #define MARLIN_EEPROM_SIZE              0x1000  // 4K
+  #define MARLIN_EEPROM_SIZE              0xFFFF  // 64K
 
   #define  I2C_BD_SCL_PIN    PA1   // Please change to the actual number which the SLK wire is connected to your mainboard
   #define  I2C_BD_SDA_PIN    PC14   // Please change to the actual number which the SDA wire is connected to your mainboard
   #define  I2C_BD_DELAY  20      // default value is 20, should be in the range [20,50].
 #endif
+
+// Use one of these or SDCard-based Emulation will be used
+//#define SRAM_EEPROM_EMULATION   // Use BackSRAM-based EEPROM emulation
+#define FLASH_EEPROM_EMULATION  // Use Flash-based EEPROM emulation
 
 //
 // Servos
