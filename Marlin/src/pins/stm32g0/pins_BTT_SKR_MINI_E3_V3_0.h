@@ -33,21 +33,20 @@
 //#define BOGUS_TEMPERATURE_GRACE_PERIOD    2000
 
 #define LED_PIN                             PD8
-
+#define MARLIN_EEPROM_SIZE              0xFFFF  // 64K
 // Onboard I2C EEPROM
 #if ANY(NO_EEPROM_SELECTED, I2C_EEPROM)
   #undef NO_EEPROM_SELECTED
   //#define I2C_EEPROM
   //#define SOFT_I2C_EEPROM                         // Force the use of Software I2C
-  #define I2C_SCL_PIN                       PA1
-  #define I2C_SDA_PIN                       PC14
-  #define MARLIN_EEPROM_SIZE              0xFFFF  // 64K
 
-  #define  I2C_BD_SCL_PIN    PA1   // Please change to the actual number which the SLK wire is connected to your mainboard
-  #define  I2C_BD_SDA_PIN    PC14   // Please change to the actual number which the SDA wire is connected to your mainboard
-  #define  I2C_BD_DELAY  20      // default value is 20, should be in the range [20,50].
 #endif
 
+#define I2C_SCL_PIN     PB6
+#define I2C_SDA_PIN     PB7
+#define  I2C_BD_SCL_PIN PB6   // Please change to the actual number which the SLK wire is connected to your mainboard
+#define  I2C_BD_SDA_PIN PB7   // Please change to the actual number which the SDA wire is connected to your mainboard
+#define  I2C_BD_DELAY  20      // default value is 20, should be in the range [20,50].
 // Use one of these or SDCard-based Emulation will be used
 //#define SRAM_EEPROM_EMULATION   // Use BackSRAM-based EEPROM emulation
 #define FLASH_EEPROM_EMULATION  // Use Flash-based EEPROM emulation
@@ -55,7 +54,7 @@
 //
 // Servos
 //
-#define SERVO0_PIN                          PA1   // SERVOS
+//#define SERVO0_PIN                          PA1   // SERVOS
 
 //
 // Limit Switches
@@ -259,7 +258,7 @@
       #define LCD_PINS_D5            EXP1_05_PIN
       #define LCD_PINS_D6            EXP1_03_PIN
       #define LCD_PINS_D7            EXP1_01_PIN
-      #define ADC_KEYPAD_PIN                PA1   // Repurpose servo pin for ADC - CONNECTING TO 5V WILL DAMAGE THE BOARD!
+      //#define ADC_KEYPAD_PIN                PA1   // Repurpose servo pin for ADC - CONNECTING TO 5V WILL DAMAGE THE BOARD!
 
     #elif ANY(MKS_MINI_12864, ENDER2_STOCKDISPLAY)
 
