@@ -42,10 +42,12 @@
 
 #endif
 
-#define I2C_SCL_PIN     PB6
-#define I2C_SDA_PIN     PB7
-#define  I2C_BD_SCL_PIN PB6   // Please change to the actual number which the SLK wire is connected to your mainboard
-#define  I2C_BD_SDA_PIN PB7   // Please change to the actual number which the SDA wire is connected to your mainboard
+#define I2C_SDA_PIN     PC14
+#define I2C_SCL_PIN     PA1
+
+#define  I2C_BD_SDA_PIN PC14   // Please change to the actual number which the SDA wire is connected to your mainboard
+#define  I2C_BD_SCL_PIN PA1   // Please change to the actual number which the SLK wire is connected to your mainboard
+
 #define  I2C_BD_DELAY  20      // default value is 20, should be in the range [20,50].
 // Use one of these or SDCard-based Emulation will be used
 //#define SRAM_EEPROM_EMULATION   // Use BackSRAM-based EEPROM emulation
