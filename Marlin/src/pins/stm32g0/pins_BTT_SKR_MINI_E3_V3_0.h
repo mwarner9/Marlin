@@ -42,9 +42,6 @@
 
 #endif
 
-#define I2C_SDA_PIN     PC14
-#define I2C_SCL_PIN     PA1
-
 #define  I2C_BD_SDA_PIN PC14   // Please change to the actual number which the SDA wire is connected to your mainboard
 #define  I2C_BD_SCL_PIN PA1   // Please change to the actual number which the SLK wire is connected to your mainboard
 
