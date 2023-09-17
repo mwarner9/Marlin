@@ -682,9 +682,10 @@
     #define DEFAULT_Kd_LIST {  70.45,  70.45 }
   #else
     // Ender 3 v2
-    #define DEFAULT_Kp  27.99
-    #define DEFAULT_Ki   3.80
-    #define DEFAULT_Kd  51.52
+    #define DEFAULT_Kp  26.88
+    #define DEFAULT_Ki   3.43
+    #define DEFAULT_Kd  52.68
+    //Kp: 26.88 Ki: 3.43 Kd: 52.68
   #endif
 #else
   #define BANG_MAX 255    // Limit hotend current while in bang-bang mode; 255=full current
