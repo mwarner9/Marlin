@@ -2289,7 +2289,7 @@
  */
 //#define SAFE_BED_LEVELING_START_X 0.0
 //#define SAFE_BED_LEVELING_START_Y 0.0
-//#define SAFE_BED_LEVELING_START_Z 0.0
+#define SAFE_BED_LEVELING_START_Z 2.0
 //#define SAFE_BED_LEVELING_START_I 0.0
 //#define SAFE_BED_LEVELING_START_J 0.0
 //#define SAFE_BED_LEVELING_START_K 0.0
@@ -2327,10 +2327,10 @@
  * the probe to be unable to reach any points.
  */
 #if PROBE_SELECTED && !IS_KINEMATIC
-  //#define PROBING_MARGIN_LEFT 20
-  //#define PROBING_MARGIN_RIGHT 20
-  //#define PROBING_MARGIN_FRONT 0
-  //#define PROBING_MARGIN_BACK 0
+  #define PROBING_MARGIN_LEFT 20
+  #define PROBING_MARGIN_RIGHT 20
+  #define PROBING_MARGIN_FRONT 50
+  #define PROBING_MARGIN_BACK 50
 #endif
 
 #if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_UBL)
@@ -2358,7 +2358,7 @@
    * between attempts, and after the maximum number of retries have been tried.
    */
   #define G29_SUCCESS_COMMANDS "M117 Bed leveling done."
-  #define G29_RECOVER_COMMANDS "M117 Probe failed. Rewiping.\nG28\nG12 P0 S12 T0"
+  #define G29_RECOVER_COMMANDS "M117 Probe failed."
   #define G29_FAILURE_COMMANDS "M117 Bed leveling failed.\nG0 Z10\nM300 P25 S880\nM300 P50 S0\nM300 P25 S880\nM300 P50 S0\nM300 P25 S880\nM300 P50 S0\nG4 S1"
 
 #endif
