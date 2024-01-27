@@ -26,7 +26,7 @@
 //#define BOARD_CUSTOM_BUILD_FLAGS -DTONE_CHANNEL=4 -DTONE_TIMER=4 -DTIMER_TONE=4
 
 #ifndef BOARD_INFO_NAME
-  #define BOARD_INFO_NAME "BTT Manta M4P V1.0"
+  #define BOARD_INFO_NAME "BTT Manta M4P V2.1"
 #endif
 
 #define USES_DIAG_JUMPERS
@@ -208,8 +208,9 @@
 #endif
 
 //
-// LCDs and Controllers
+// LCD / Controller
 //
+
 #if IS_TFTGLCD_PANEL
 
   #if ENABLED(TFTGLCD_PANEL_SPI)
@@ -303,8 +304,8 @@
 //
 // NeoPixel LED
 //
-#ifndef NEOPIXEL_PIN
-  #define NEOPIXEL_PIN                      PD0
+#ifndef BOARD_NEOPIXEL_PIN
+  #define BOARD_NEOPIXEL_PIN                PD0
 #endif
 
 #ifndef NEOPIXEL2_PIN
