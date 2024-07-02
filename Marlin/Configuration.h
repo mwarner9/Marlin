@@ -1851,8 +1851,8 @@
 // @section geometry
 
 // The size of the printable area
-#define X_BED_SIZE 400
-#define Y_BED_SIZE 360
+#define X_BED_SIZE 410
+#define Y_BED_SIZE 370
 
 // Travel limits (linear=mm, rotational=°) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
@@ -1860,7 +1860,7 @@
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
-#define Z_MAX_POS 450
+#define Z_MAX_POS 500
 //#define I_MIN_POS 0
 //#define I_MAX_POS 50
 //#define J_MIN_POS 0
@@ -3581,7 +3581,7 @@
  */
 
 // LED Type. Enable only one of the following two options:
-//#define RGB_LED
+#define RGB_LED
 //#define RGBW_LED
 
 #if ANY(RGB_LED, RGBW_LED)
@@ -3599,7 +3599,7 @@
 #endif
 
 // Support for Adafruit NeoPixel LED driver
-//#define NEOPIXEL_LED
+#define NEOPIXEL_LED
 #if ENABLED(NEOPIXEL_LED)
   #define NEOPIXEL_TYPE           NEO_GRB // NEO_GRBW, NEO_RGBW, NEO_GRB, NEO_RBG, etc.
                                           // See https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.h
