@@ -433,6 +433,10 @@ void restore_feedrate_and_scaling();
 typedef bits_t(NUM_AXES) main_axes_bits_t;
 constexpr main_axes_bits_t main_axes_mask = _BV(NUM_AXES) - 1;
 
+#if HAS_Z_AXIS
+  extern bool z_min_trusted; // If Z has been powered on trust that the real Z is >= current_position.z
+#endif
+
 void set_axis_is_at_home(const AxisEnum axis);
 
 #if HAS_ENDSTOPS
@@ -631,4 +635,9 @@ void home_if_needed(const bool keeplev=false);
   struct sensorless_t;
   sensorless_t start_sensorless_homing_per_axis(const AxisEnum axis);
   void end_sensorless_homing_per_axis(const AxisEnum axis, sensorless_t enable_stealth);
+#endif
+
+#if HAS_HOMING_CURRENT
+  void set_homing_current(const AxisEnum axis);
+  void restore_homing_current(const AxisEnum axis);
 #endif
